@@ -54,97 +54,99 @@ const InterestCalculator = () => {
             </header>
 
             <div style={{ padding: '20px' }}>
-                <div className="grid-layout">
-                    {/* Results Card */}
-                    <div className="card" style={{ background: 'var(--primary)', color: 'white', padding: '30px', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: '0 15px 35px rgba(94, 104, 177, 0.3)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <div>
-                                <p style={{ fontSize: '13px', opacity: 0.9, marginBottom: '5px' }}>Net Interest</p>
-                                <h3 style={{ fontSize: '1.6rem', fontWeight: '800' }}>₹ {results.netInterest}</h3>
+                <div className="content-center">
+                    <div className="grid-layout">
+                        {/* Results Card */}
+                        <div className="card" style={{ background: 'var(--primary)', color: 'white', padding: '30px', display: 'flex', flexDirection: 'column', gap: '20px', boxShadow: '0 15px 35px rgba(94, 104, 177, 0.3)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <div>
+                                    <p style={{ fontSize: '13px', opacity: 0.9, marginBottom: '5px' }}>Net Interest</p>
+                                    <h3 style={{ fontSize: '1.6rem', fontWeight: '800' }}>₹ {results.netInterest}</h3>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                    <p style={{ fontSize: '13px', opacity: 0.9, marginBottom: '5px' }}>Principal Amount</p>
+                                    <h3 style={{ fontSize: '1.4rem', fontWeight: '700' }}>₹ {data.amount}</h3>
+                                </div>
                             </div>
-                            <div style={{ textAlign: 'right' }}>
-                                <p style={{ fontSize: '13px', opacity: 0.9, marginBottom: '5px' }}>Principal Amount</p>
-                                <h3 style={{ fontSize: '1.4rem', fontWeight: '700' }}>₹ {data.amount}</h3>
+                            <div style={{ borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '20px' }}>
+                                <p style={{ fontSize: '13px', opacity: 0.9, marginBottom: '5px' }}>Total payable in {data.period} months</p>
+                                <h2 style={{ fontSize: '2.2rem', fontWeight: '900' }}>₹ {results.totalPayable}</h2>
                             </div>
-                        </div>
-                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '20px' }}>
-                            <p style={{ fontSize: '13px', opacity: 0.9, marginBottom: '5px' }}>Total payable in {data.period} months</p>
-                            <h2 style={{ fontSize: '2.2rem', fontWeight: '900' }}>₹ {results.totalPayable}</h2>
-                        </div>
-                    </div>
-
-                    {/* Form Selection */}
-                    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '30px' }}>
-                        <div>
-                            <label style={{ fontSize: '13px', color: 'var(--gray-500)', display: 'block', marginBottom: '8px' }}>Principal amount (₹)</label>
-                            <input
-                                type="number"
-                                className="card"
-                                style={{ width: '100%', marginBottom: 0, padding: '15px', background: 'var(--gray-100)', border: 'none', fontSize: '15px' }}
-                                value={data.amount}
-                                onChange={(e) => setData({ ...data, amount: e.target.value })}
-                            />
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                        {/* Form Selection */}
+                        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '30px' }}>
                             <div>
-                                <label style={{ fontSize: '13px', color: 'var(--gray-500)', display: 'block', marginBottom: '8px' }}>Interest (%)</label>
+                                <label style={{ fontSize: '13px', color: 'var(--gray-500)', display: 'block', marginBottom: '8px' }}>Principal amount (₹)</label>
                                 <input
                                     type="number"
                                     className="card"
                                     style={{ width: '100%', marginBottom: 0, padding: '15px', background: 'var(--gray-100)', border: 'none', fontSize: '15px' }}
-                                    value={data.interest}
-                                    onChange={(e) => setData({ ...data, interest: e.target.value })}
+                                    value={data.amount}
+                                    onChange={(e) => setData({ ...data, amount: e.target.value })}
                                 />
                             </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                <div>
+                                    <label style={{ fontSize: '13px', color: 'var(--gray-500)', display: 'block', marginBottom: '8px' }}>Interest (%)</label>
+                                    <input
+                                        type="number"
+                                        className="card"
+                                        style={{ width: '100%', marginBottom: 0, padding: '15px', background: 'var(--gray-100)', border: 'none', fontSize: '15px' }}
+                                        value={data.interest}
+                                        onChange={(e) => setData({ ...data, interest: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: '13px', color: 'var(--gray-500)', display: 'block', marginBottom: '8px' }}>Frequency</label>
+                                    <select
+                                        className="card"
+                                        style={{ width: '100%', marginBottom: 0, padding: '15px', background: 'var(--gray-100)', border: 'none', fontSize: '15px' }}
+                                        value={data.frequency}
+                                        onChange={(e) => setData({ ...data, frequency: e.target.value })}
+                                    >
+                                        <option>Monthly</option>
+                                        <option>Yearly</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <div>
-                                <label style={{ fontSize: '13px', color: 'var(--gray-500)', display: 'block', marginBottom: '8px' }}>Frequency</label>
+                                <label style={{ fontSize: '13px', color: 'var(--gray-500)', display: 'block', marginBottom: '8px' }}>Interest Type</label>
                                 <select
                                     className="card"
                                     style={{ width: '100%', marginBottom: 0, padding: '15px', background: 'var(--gray-100)', border: 'none', fontSize: '15px' }}
-                                    value={data.frequency}
-                                    onChange={(e) => setData({ ...data, frequency: e.target.value })}
+                                    value={data.type}
+                                    onChange={(e) => setData({ ...data, type: e.target.value })}
                                 >
-                                    <option>Monthly</option>
-                                    <option>Yearly</option>
+                                    <option>Simple Interest</option>
+                                    <option>Compound Interest</option>
                                 </select>
                             </div>
-                        </div>
 
-                        <div>
-                            <label style={{ fontSize: '13px', color: 'var(--gray-500)', display: 'block', marginBottom: '8px' }}>Interest Type</label>
-                            <select
-                                className="card"
-                                style={{ width: '100%', marginBottom: 0, padding: '15px', background: 'var(--gray-100)', border: 'none', fontSize: '15px' }}
-                                value={data.type}
-                                onChange={(e) => setData({ ...data, type: e.target.value })}
-                            >
-                                <option>Simple Interest</option>
-                                <option>Compound Interest</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label style={{ fontSize: '13px', color: 'var(--gray-500)', display: 'block', marginBottom: '8px' }}>Duration (Months)</label>
-                            <input
-                                type="number"
-                                className="card"
-                                style={{ width: '100%', marginBottom: 0, padding: '15px', background: 'var(--gray-100)', border: 'none', fontSize: '15px' }}
-                                value={data.period}
-                                onChange={(e) => setData({ ...data, period: e.target.value })}
-                            />
+                            <div>
+                                <label style={{ fontSize: '13px', color: 'var(--gray-500)', display: 'block', marginBottom: '8px' }}>Duration (Months)</label>
+                                <input
+                                    type="number"
+                                    className="card"
+                                    style={{ width: '100%', marginBottom: 0, padding: '15px', background: 'var(--gray-100)', border: 'none', fontSize: '15px' }}
+                                    value={data.period}
+                                    onChange={(e) => setData({ ...data, period: e.target.value })}
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px' }}>
-                    <button
-                        className="btn btn-primary"
-                        style={{ width: '100%', maxWidth: '500px', padding: '18px', borderRadius: '16px', fontSize: '16px' }}
-                        onClick={() => navigate('/select-customer')}
-                    >
-                        Proceed to Lend
-                    </button>
+                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px' }}>
+                        <button
+                            className="btn btn-primary"
+                            style={{ width: '100%', maxWidth: '500px', padding: '18px', borderRadius: '16px', fontSize: '16px' }}
+                            onClick={() => navigate('/select-customer')}
+                        >
+                            Proceed to Lend
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
