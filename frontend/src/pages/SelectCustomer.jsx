@@ -63,7 +63,7 @@ const SelectCustomer = () => {
                             key={acc._id}
                             className="card"
                             style={{ display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer' }}
-                            onClick={() => navigate(`/add-transaction/${acc._id}`)}
+                            onClick={() => navigate(`/ledger/${acc._id}`)}
                         >
                             <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'var(--gray-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'var(--primary)' }}>
                                 {acc.name.charAt(0)}
