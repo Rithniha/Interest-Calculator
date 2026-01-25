@@ -36,66 +36,79 @@ const AddContact = () => {
             </header>
 
             <div style={{ padding: '20px' }}>
-                <form onSubmit={handleSubmit}>
-                    {/* Form Card */}
-                    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div className="form-container">
+                    <form onSubmit={handleSubmit}>
+                        {/* Form Card */}
+                        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '25px', padding: '30px' }}>
+                            <div>
+                                <label style={{ fontSize: '13px', color: 'var(--gray-500)', display: 'block', marginBottom: '8px' }}>Full Name</label>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--gray-100)', padding: '12px 15px', borderRadius: '12px' }}>
+                                    <LucideUser size={18} color="var(--gray-500)" />
+                                    <input
+                                        type="text"
+                                        placeholder="Enter name"
+                                        style={{ border: 'none', outline: 'none', width: '100%', fontSize: '15px', background: 'transparent' }}
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                            </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', borderBottom: '1px solid var(--gray-100)', paddingBottom: '10px' }}>
-                            <LucideUser size={20} color="var(--gray-500)" />
-                            <input
-                                type="text"
-                                placeholder="Full Name"
-                                style={{ border: 'none', outline: 'none', width: '100%', fontSize: '16px' }}
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                required
-                            />
+                            <div>
+                                <label style={{ fontSize: '13px', color: 'var(--gray-500)', display: 'block', marginBottom: '8px' }}>Phone Number</label>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--gray-100)', padding: '12px 15px', borderRadius: '12px' }}>
+                                    <LucidePhone size={18} color="var(--gray-500)" />
+                                    <input
+                                        type="text"
+                                        placeholder="+91"
+                                        style={{ border: 'none', outline: 'none', width: '100%', fontSize: '15px', background: 'transparent' }}
+                                        value={formData.phone}
+                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label style={{ fontSize: '13px', color: 'var(--gray-500)', display: 'block', marginBottom: '8px' }}>Address</label>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--gray-100)', padding: '12px 15px', borderRadius: '12px' }}>
+                                    <LucideMapPin size={18} color="var(--gray-500)" />
+                                    <input
+                                        type="text"
+                                        placeholder="City, State"
+                                        style={{ border: 'none', outline: 'none', width: '100%', fontSize: '15px', background: 'transparent' }}
+                                        value={formData.address}
+                                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label style={{ fontSize: '13px', color: 'var(--gray-500)', display: 'block', marginBottom: '8px' }}>Categorize As</label>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--gray-100)', padding: '12px 15px', borderRadius: '12px' }}>
+                                    <LucideBriefcase size={18} color="var(--gray-500)" />
+                                    <select
+                                        style={{ border: 'none', outline: 'none', width: '100%', fontSize: '15px', background: 'transparent' }}
+                                        value={formData.role}
+                                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                    >
+                                        <option value="Borrower">Borrower (Customer)</option>
+                                        <option value="Investor">Investor (Giver)</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', borderBottom: '1px solid var(--gray-100)', paddingBottom: '10px' }}>
-                            <LucidePhone size={20} color="var(--gray-500)" />
-                            <input
-                                type="text"
-                                placeholder="Phone Number"
-                                style={{ border: 'none', outline: 'none', width: '100%', fontSize: '16px' }}
-                                value={formData.phone}
-                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            />
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', borderBottom: '1px solid var(--gray-100)', paddingBottom: '10px' }}>
-                            <LucideMapPin size={20} color="var(--gray-500)" />
-                            <input
-                                type="text"
-                                placeholder="Address"
-                                style={{ border: 'none', outline: 'none', width: '100%', fontSize: '16px' }}
-                                value={formData.address}
-                                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                            />
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                            <LucideBriefcase size={20} color="var(--gray-500)" />
-                            <select
-                                style={{ border: 'none', outline: 'none', width: '100%', fontSize: '16px', background: 'none' }}
-                                value={formData.role}
-                                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                            >
-                                <option value="Borrower">Borrower (Customer)</option>
-                                <option value="Investor">Investor (Giver)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="btn btn-primary"
-                        style={{ width: '100%', marginTop: '30px', padding: '15px', borderRadius: '16px' }}
-                        disabled={loading}
-                    >
-                        {loading ? 'Saving...' : 'Save Customer'}
-                    </button>
-                </form>
+                        <button
+                            type="submit"
+                            className="btn btn-primary"
+                            style={{ width: '100%', marginTop: '30px', padding: '18px', borderRadius: '16px', fontSize: '16px' }}
+                            disabled={loading}
+                        >
+                            {loading ? 'Saving...' : 'Save Customer'}
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     );

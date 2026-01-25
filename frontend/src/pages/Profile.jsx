@@ -24,65 +24,59 @@ const Profile = () => {
             </header>
 
             <div style={{ padding: '0 20px' }}>
-                {/* Profile Card */}
-                <div className="card" style={{ textAlign: 'center', padding: '30px 20px' }}>
-                    <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'var(--gray-100)', margin: '0 auto 15px', overflow: 'hidden', border: '3px solid var(--primary)' }}>
-                        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.fullName}`} alt="Avatar" />
+                <div className="grid-layout">
+                    {/* Profile Summary Card */}
+                    <div className="card" style={{ textAlign: 'center', padding: '40px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ width: '100px', height: '100px', borderRadius: '30px', background: 'var(--gray-100)', marginBottom: '20px', overflow: 'hidden', border: '3px solid white', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+                            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.fullName}`} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <h2 style={{ fontSize: '1.6rem', fontWeight: '800', margin: '0 0 5px 0' }}>{user.fullName}</h2>
+                        <p style={{ color: 'var(--gray-500)', fontSize: '14px', marginBottom: '15px' }}>{user.email}</p>
+                        <div style={{ background: 'rgba(var(--primary-rgb), 0.1)', padding: '8px 20px', borderRadius: '25px', fontSize: '12px', color: 'var(--primary)', fontWeight: 'bold', letterSpacing: '1px' }}>
+                            {role.toUpperCase()} MODE ACTIVE
+                        </div>
                     </div>
-                    <h2 style={{ fontSize: '1.4rem', margin: '0 0 5px 0' }}>{user.fullName}</h2>
-                    <p style={{ color: 'var(--gray-500)', fontSize: '14px', margin: 0 }}>{user.email}</p>
-                    <div style={{ marginTop: '15px', display: 'inline-block', background: 'var(--bg-main)', padding: '5px 15px', borderRadius: '20px', fontSize: '12px', color: 'var(--primary)', fontWeight: 'bold' }}>
-                        {role.toUpperCase()} PANEL
-                    </div>
-                </div>
 
-                {/* Settings List */}
-                <div style={{ marginTop: '20px' }}>
-                    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px' }}>
-                        <div
-                            style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', cursor: 'pointer', borderRadius: '14px' }}
-                            onClick={toggleRole}
+                    {/* Settings & Options */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <div className="card" style={{ padding: '15px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {[
+                                { icon: LucideShield, title: 'Switch Role', subTitle: `Switch to ${role === 'Borrower' ? 'Investor' : 'Borrower'} mode`, action: toggleRole },
+                                { icon: LucideMail, title: 'Email Notifications', subTitle: 'Get daily interest updates', toggle: true },
+                                { icon: LucideLock, title: 'Privacy Settings', subTitle: 'Manage your data visibility' }
+                            ].map((item, idx) => (
+                                <div
+                                    key={idx}
+                                    onClick={item.action}
+                                    style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', cursor: item.action ? 'pointer' : 'default', borderRadius: '16px', transition: 'background 0.2s ease' }}
+                                    className="profile-item-hover"
+                                >
+                                    <div style={{ background: 'var(--gray-100)', padding: '10px', borderRadius: '12px', color: 'var(--primary)' }}>
+                                        <item.icon size={20} />
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <p style={{ margin: 0, fontWeight: '700', fontSize: '15px' }}>{item.title}</p>
+                                        <p style={{ margin: 0, fontSize: '12px', color: 'var(--gray-500)' }}>{item.subTitle}</p>
+                                    </div>
+                                    {item.toggle && (
+                                        <div style={{ width: '45px', height: '24px', background: 'var(--primary)', borderRadius: '20px', position: 'relative' }}>
+                                            <div style={{ position: 'absolute', right: '3px', top: '3px', width: '18px', height: '18px', borderRadius: '50%', background: 'white' }}></div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Logout Section */}
+                        <button
+                            onClick={handleLogout}
+                            className="btn"
+                            style={{ width: '100%', padding: '18px', borderRadius: '18px', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--error)', gap: '10px', fontWeight: '700' }}
                         >
-                            <div style={{ background: 'var(--bg-main)', padding: '8px', borderRadius: '10px', color: 'var(--primary)' }}>
-                                {role === 'Borrower' ? <LucideShield size={20} /> : <LucideUser size={20} />}
-                            </div>
-                            <div style={{ flex: 1 }}>
-                                <p style={{ margin: 0, fontWeight: '600' }}>Change Role</p>
-                                <p style={{ margin: 0, fontSize: '12px', color: 'var(--gray-500)' }}>Switch to {role === 'Borrower' ? 'Investor' : 'Borrower'} mode</p>
-                            </div>
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', borderRadius: '14px' }}>
-                            <div style={{ background: 'var(--bg-main)', padding: '8px', borderRadius: '10px', color: 'var(--primary)' }}>
-                                <LucideMail size={20} />
-                            </div>
-                            <div style={{ flex: 1 }}>
-                                <p style={{ margin: 0, fontWeight: '600' }}>Email Notification</p>
-                            </div>
-                            <div style={{ width: '40px', height: '20px', background: 'var(--primary)', borderRadius: '20px', position: 'relative' }}>
-                                <div style={{ position: 'absolute', right: '2px', top: '2px', width: '16px', height: '16px', borderRadius: '50%', background: 'white' }}></div>
-                            </div>
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', borderRadius: '14px' }}>
-                            <div style={{ background: 'var(--bg-main)', padding: '8px', borderRadius: '10px', color: 'var(--primary)' }}>
-                                <LucideLock size={20} />
-                            </div>
-                            <div style={{ flex: 1 }}>
-                                <p style={{ margin: 0, fontWeight: '600' }}>Privacy Policy</p>
-                            </div>
-                        </div>
+                            <LucideLogOut size={20} /> Sign Out Account
+                        </button>
                     </div>
                 </div>
-
-                {/* Logout Button */}
-                <button
-                    onClick={handleLogout}
-                    className="btn"
-                    style={{ width: '100%', marginTop: '30px', padding: '15px', borderRadius: '16px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)', gap: '10px' }}
-                >
-                    <LucideLogOut size={20} /> Logout Account
-                </button>
             </div>
             <Navigation />
         </div>

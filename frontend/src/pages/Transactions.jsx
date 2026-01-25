@@ -35,29 +35,31 @@ const Transactions = () => {
 
             <div style={{ padding: '0 20px' }}>
                 {loading ? (
-                    <p>Loading...</p>
+                    <p>Loading transactions...</p>
                 ) : transactions.length === 0 ? (
-                    <div className="card" style={{ textAlign: 'center', padding: '50px' }}>
-                        <p color="var(--gray-500)">No transactions recorded yet.</p>
+                    <div className="card" style={{ textAlign: 'center', padding: '60px 20px' }}>
+                        <p style={{ color: 'var(--gray-500)', margin: 0 }}>No transactions recorded yet.</p>
                     </div>
                 ) : (
-                    transactions.map((t, idx) => (
-                        <div key={idx} className="card" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px' }}>
-                            <div style={{ padding: '10px', borderRadius: '12px', background: t.type === 'Given' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: t.type === 'Given' ? 'var(--success)' : 'var(--error)' }}>
-                                {t.type === 'Given' ? <LucideTrendingUp size={24} /> : <LucideTrendingDown size={24} />}
+                    <div className="grid-layout">
+                        {transactions.map((t, idx) => (
+                            <div key={idx} className="card" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '20px' }}>
+                                <div style={{ padding: '12px', borderRadius: '15px', background: t.type === 'Given' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: t.type === 'Given' ? 'var(--success)' : 'var(--error)' }}>
+                                    {t.type === 'Given' ? <LucideTrendingUp size={24} /> : <LucideTrendingDown size={24} />}
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700' }}>{t.accountId?.name || 'Unknown User'}</h4>
+                                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--gray-500)' }}>{new Date(t.date).toLocaleDateString()}</p>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                    <p style={{ margin: 0, fontWeight: '800', fontSize: '16px', color: t.type === 'Given' ? 'var(--success)' : 'var(--error)' }}>
+                                        {t.type === 'Given' ? '+' : '-'} ₹ {t.amount}
+                                    </p>
+                                    <p style={{ margin: 0, fontSize: '10px', color: 'var(--gray-500)', textTransform: 'uppercase' }}>{t.interestType || 'Simple'}</p>
+                                </div>
                             </div>
-                            <div style={{ flex: 1 }}>
-                                <h4 style={{ margin: 0 }}>{t.accountId?.name || 'Unknown'}</h4>
-                                <p style={{ margin: 0, fontSize: '12px', color: 'var(--gray-500)' }}>{new Date(t.date).toLocaleDateString()}</p>
-                            </div>
-                            <div style={{ textAlign: 'right' }}>
-                                <p style={{ margin: 0, fontWeight: 'bold', color: t.type === 'Given' ? 'var(--success)' : 'var(--error)' }}>
-                                    {t.type === 'Given' ? '+' : '-'} ₹ {t.amount}
-                                </p>
-                                <p style={{ margin: 0, fontSize: '10px', color: 'var(--gray-500)' }}>{t.interestType}</p>
-                            </div>
-                        </div>
-                    ))
+                        ))}
+                    </div>
                 )}
             </div>
             <Navigation />

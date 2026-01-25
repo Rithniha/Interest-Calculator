@@ -85,52 +85,56 @@ const Dashboard = () => {
       </header>
 
       <div style={{ padding: '0 20px' }}>
-        {/* Main Balance Card */}
-        <div className="card" style={{ background: 'var(--white)', padding: '25px', position: 'relative', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.03)' }}>
-          <p style={{ color: 'var(--gray-500)', marginBottom: '10px' }}>Available amount</p>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-            <h1 style={{ fontSize: '2.2rem', margin: 0 }}>₹ {stats.totalOutstanding.toLocaleString()}</h1>
-            <button className="btn btn-primary" onClick={() => navigate('/calculator')} style={{ borderRadius: '16px', padding: '12px 20px' }}>Redeem Now</button>
+        <div className="grid-layout">
+          {/* Main Balance Card */}
+          <div className="card" style={{ background: 'var(--white)', position: 'relative', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.03)' }}>
+            <p style={{ color: 'var(--gray-500)', marginBottom: '10px' }}>Available amount</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <h1 style={{ fontSize: '2.2rem', margin: 0 }}>₹ {stats.totalOutstanding.toLocaleString()}</h1>
+              <button className="btn btn-primary" onClick={() => navigate('/calculator')} style={{ borderRadius: '16px', padding: '12px 20px' }}>Redeem Now</button>
+            </div>
+            <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid var(--gray-100)', display: 'flex', justifyContent: 'space-between' }}>
+              <p style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Total redeem: <span style={{ color: 'var(--success)' }}>₹ 0.00</span></p>
+              <p
+                onClick={() => navigate('/transactions')}
+                style={{ fontSize: '12px', color: 'var(--primary)', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                View history
+              </p>
+            </div>
           </div>
-          <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid var(--gray-100)', display: 'flex', justifyContent: 'space-between' }}>
-            <p style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Total redeem: <span style={{ color: 'var(--success)' }}>₹ 0.00</span></p>
-            <p
-              onClick={() => navigate('/transactions')}
-              style={{ fontSize: '12px', color: 'var(--primary)', fontWeight: 'bold', cursor: 'pointer' }}
-            >
-              View history
-            </p>
-          </div>
-        </div>
 
-        {/* Payments Due Slider */}
-        <div style={{ marginTop: '25px', marginBottom: '100px' }}>
-          <h3 style={{ marginBottom: '15px', fontSize: '1.1rem' }}>Payments Due</h3>
-          <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '15px', scrollbarWidth: 'none' }}>
-            {stats.duePayments.length === 0 ? (
-              <p style={{ color: 'var(--gray-500)', fontSize: '14px' }}>No payments due today.</p>
-            ) : (
-              stats.duePayments.map((p, idx) => (
-                <div key={idx} className="card" style={{ minWidth: '110px', padding: '15px', textAlign: 'center', marginBottom: 0, boxShadow: '0 4px 15px rgba(0,0,0,0.04)' }}>
-                  <p style={{ color: 'var(--error)', fontWeight: 'bold', margin: '0 0 8px 0', fontSize: '14px' }}>₹ {p.amount}</p>
-                  <p style={{ fontSize: '10px', color: 'var(--gray-500)', marginBottom: '10px' }}>Today</p>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--gray-100)', margin: '0 auto', overflow: 'hidden' }}>
-                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${p.accountId?.name}`} alt="user" />
+          {/* Payments Due Section */}
+          <div className="card">
+            <h3 style={{ marginBottom: '15px', fontSize: '1.1rem' }}>Payments Due</h3>
+            <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '15px', scrollbarWidth: 'none' }}>
+              {stats.duePayments.length === 0 ? (
+                <p style={{ color: 'var(--gray-500)', fontSize: '14px' }}>No payments due today.</p>
+              ) : (
+                stats.duePayments.map((p, idx) => (
+                  <div key={idx} style={{ minWidth: '100px', textAlign: 'center' }}>
+                    <p style={{ color: 'var(--error)', fontWeight: 'bold', margin: '0 0 8px 0', fontSize: '14px' }}>₹ {p.amount}</p>
+                    <p style={{ fontSize: '10px', color: 'var(--gray-500)', marginBottom: '10px' }}>Today</p>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--gray-100)', margin: '0 auto', overflow: 'hidden' }}>
+                      <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${p.accountId?.name}`} alt="user" />
+                    </div>
                   </div>
-                </div>
-              ))
-            )}
+                ))
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Action Button */}
-        <button
-          className="btn btn-primary"
-          onClick={() => navigate('/select-customer')}
-          style={{ position: 'fixed', bottom: '105px', left: '50%', transform: 'translateX(-50%)', borderRadius: '30px', padding: '15px 30px', gap: '10px', boxShadow: `0 8px 30px ${role === 'Borrower' ? 'rgba(94, 104, 177, 0.4)' : 'rgba(209, 107, 60, 0.4)'}`, zIndex: 100 }}
-        >
-          <LucidePlus size={20} /> Add Transactions
-        </button>
+        {/* Action Button - Centered on desktop */}
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '30px 0' }}>
+          <button
+            className="btn btn-primary"
+            onClick={() => navigate('/select-customer')}
+            style={{ borderRadius: '30px', padding: '15px 40px', gap: '10px', boxShadow: `0 8px 30px ${role === 'Borrower' ? 'rgba(94, 104, 177, 0.4)' : 'rgba(209, 107, 60, 0.4)'}` }}
+          >
+            <LucidePlus size={20} /> Add Transactions
+          </button>
+        </div>
 
         {/* Investor Performance */}
         <div style={{ marginTop: '25px', paddingBottom: '120px' }}>
@@ -143,27 +147,29 @@ const Dashboard = () => {
               View All
             </p>
           </div>
-          {stats.topAccounts.length === 0 ? (
-            <div className="card" style={{ textAlign: 'center', color: 'var(--gray-500)', padding: '40px' }}>
-              <p>No transactions yet.</p>
-            </div>
-          ) : (
-            stats.topAccounts.map(acc => (
-              <div key={acc._id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', marginBottom: '12px' }}>
-                <div style={{ width: '45px', height: '45px', borderRadius: '50%', background: 'var(--gray-100)', overflow: 'hidden' }}>
-                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${acc.name}`} alt="avatar" />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <h4 style={{ margin: 0, fontSize: '14px' }}>{acc.name}</h4>
-                  <p style={{ margin: 0, fontSize: '11px', color: 'var(--gray-500)' }}>{new Date(acc.createdAt).toLocaleDateString()}</p>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <p style={{ margin: 0, fontWeight: 'bold', fontSize: '14px' }}>₹ {acc.outstandingBalance.toLocaleString()}</p>
-                  <p style={{ margin: 0, fontSize: '10px', color: 'var(--gray-500)' }}>1.5% (3K)</p>
-                </div>
+
+          <div className="grid-layout">
+            {stats.topAccounts.length === 0 ? (
+              <div className="card" style={{ textAlign: 'center', color: 'var(--gray-500)', padding: '40px', gridColumn: '1 / -1' }}>
+                <p>No transactions yet.</p>
               </div>
-            ))
-          )}
+            ) : (
+              stats.topAccounts.map(acc => (
+                <div key={acc._id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px' }}>
+                  <div style={{ width: '45px', height: '45px', borderRadius: '50%', background: 'var(--gray-100)', overflow: 'hidden' }}>
+                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${acc.name}`} alt="avatar" />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ margin: 0, fontSize: '14px' }}>{acc.name}</h4>
+                    <p style={{ margin: 0, fontSize: '11px', color: 'var(--gray-500)' }}>{new Date(acc.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ margin: 0, fontWeight: 'bold', fontSize: '14px' }}>₹ {acc.outstandingBalance.toLocaleString()}</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
 
