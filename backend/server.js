@@ -24,6 +24,7 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/accounts', require('./routes/accountRoutes'));
 app.use('/api/transactions', require('./routes/transactionRoutes'));
 app.use('/api/stats', require('./routes/statsRoutes'));
+app.use('/api/users', require('./routes/userRoutes'));
 
 // Basic Route
 app.get('/', (req, res) => {

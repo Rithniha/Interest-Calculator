@@ -22,20 +22,28 @@ const AddTransaction = () => {
     });
 
     useEffect(() => {
-        const fetchAccount = async () => {
+        const fetchInitialData = async () => {
             try {
-                const res = await api.get(`/accounts/${accountId}`);
-                setAccount(res.data);
-                // Adjust default type based on account role
+                // Fetch account details
+                const accRes = await api.get(`/accounts/${accountId}`);
+                setAccount(accRes.data);
+
+                // Fetch user defaults
+                const userRes = await api.get('/users/profile');
+                const settings = userRes.data.settings || {};
+
                 setFormData(prev => ({
                     ...prev,
-                    type: res.data.role === 'Borrower' ? 'Given' : 'Taken'
+                    type: accRes.data.role === 'Borrower' ? 'Given' : 'Taken',
+                    interestRate: settings.defaultInterestRate || '',
+                    interestType: settings.defaultInterestType || 'Simple',
+                    paymentFrequency: settings.defaultFrequency || 'Monthly'
                 }));
             } catch (err) {
                 console.error(err);
             }
         };
-        fetchAccount();
+        fetchInitialData();
     }, [accountId]);
 
     const handleSubmit = async (e) => {
@@ -43,7 +51,7 @@ const AddTransaction = () => {
         setLoading(true);
         try {
             await api.post('/transactions', formData);
-            navigate(`/ledger/${accountId}`); // Go back to ledger view
+            navigate(`/ledger/${accountId}`);
         } catch (err) {
             alert(err.response?.data?.message || 'Failed to record transaction');
         } finally {
@@ -51,7 +59,7 @@ const AddTransaction = () => {
         }
     };
 
-    if (!account) return <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}><h2>Loading Account details...</h2></div>;
+    if (!account) return <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}><h2>Loading details...</h2></div>;
 
     return (
         <div className="container" style={{ background: 'var(--bg-main)' }}>
@@ -161,6 +169,20 @@ const AddTransaction = () => {
                                             <option value="Compound">Compound Interest</option>
                                         </select>
                                     </div>
+
+                                    <div>
+                                        <label style={{ fontSize: '13px', color: 'var(--gray-500)', display: 'block', marginBottom: '8px' }}>Calculation Cycle</label>
+                                        <select
+                                            className="card"
+                                            style={{ width: '100%', marginBottom: 0, padding: '15px', background: 'var(--gray-100)', border: 'none', fontSize: '15px' }}
+                                            value={formData.paymentFrequency}
+                                            onChange={(e) => setFormData({ ...formData, paymentFrequency: e.target.value })}
+                                        >
+                                            <option value="Monthly">Monthly</option>
+                                            <option value="Daily">Daily</option>
+                                            <option value="Yearly">Yearly</option>
+                                        </select>
+                                    </div>
                                 </div>
                             )}
 
@@ -185,7 +207,7 @@ const AddTransaction = () => {
                         <button
                             type="submit"
                             className="btn btn-primary"
-                            style={{ width: '100%', marginTop: '30px', padding: '20px', borderRadius: '20px', fontSize: '16px', fontWeight: '800', boxShadow: '0 10px 25px rgba(94, 104, 177, 0.3)' }}
+                            style={{ width: '100%', marginTop: '30px', padding: '20px', borderRadius: '20px', fontSize: '16px', fontWeight: '800' }}
                             disabled={loading}
                         >
                             {loading ? 'Processing...' : 'Securely Save Entry'}
