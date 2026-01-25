@@ -12,9 +12,10 @@ import api from './utils/api';
 import AccountLedger from './pages/AccountLedger';
 import { exportToPDF, exportToExcel } from './utils/reports';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
+import Reminders from './pages/Reminders';
 import {
   LucideHome, LucideWallet, LucideTrendingUp, LucideUser,
-  LucidePlus, LucideCalculator, LucideRefreshCw, LucideDownload, LucideLogOut
+  LucidePlus, LucideCalculator, LucideRefreshCw, LucideDownload, LucideLogOut, LucideBell
 } from 'lucide-react';
 
 import {
@@ -35,6 +36,8 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { role, toggleRole } = useTheme();
   const [stats, setStats] = useState({ totalOutstanding: 0, topAccounts: [], duePayments: [], monthlyStats: [] });
+  const [reminders, setReminders] = useState({ overdue: [] });
+  const [showAlert, setShowAlert] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -47,6 +50,13 @@ const Dashboard = () => {
       try {
         const res = await api.get('/stats/overview');
         setStats(res.data);
+
+        const remRes = await api.get('/stats/reminders');
+        setReminders(remRes.data);
+        if (remRes.data.overdue.length > 0 && !sessionStorage.getItem('alertShown')) {
+          setShowAlert(true);
+          sessionStorage.setItem('alertShown', 'true');
+        }
       } catch (err) {
         console.error('Failed to fetch stats');
       }
@@ -76,6 +86,7 @@ const Dashboard = () => {
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           {[
             { icon: LucideDownload, title: 'Download PDF', onClick: () => exportToPDF(stats.topAccounts, 'Investor_Performance') },
+            { icon: LucideBell, title: 'Reminders', onClick: () => navigate('/reminders'), color: reminders.overdue.length > 0 ? 'var(--error)' : 'var(--primary)' },
             { icon: LucideRefreshCw, title: 'Switch Role', onClick: toggleRole },
             { icon: LucideCalculator, title: 'Calculator', onClick: () => navigate('/calculator') },
             { icon: LucideUser, title: 'Profile', onClick: () => navigate('/profile') },
@@ -99,6 +110,16 @@ const Dashboard = () => {
       </header>
 
       <div style={{ padding: '0 20px' }}>
+        {/* Overdue Alert Pop-up */}
+        {showAlert && (
+          <div className="card" style={{ background: 'var(--error)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', padding: '15px 25px', animation: 'slideDown 0.5s ease' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <LucideBell className="shake" />
+              <p style={{ margin: 0, fontWeight: '700' }}>You have {reminders.overdue.length} Overdue Payments!</p>
+            </div>
+            <button onClick={() => navigate('/reminders')} style={{ background: 'white', color: 'var(--error)', border: 'none', padding: '8px 15px', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}>View Now</button>
+          </div>
+        )}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '20px' }}>
           {/* Main Balance Card */}
           <div className="card" style={{ background: 'var(--primary)', color: 'white', position: 'relative', overflow: 'hidden' }}>
@@ -256,6 +277,7 @@ function App() {
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/transactions" element={<PrivateRoute><Transactions /></PrivateRoute>} />
           <Route path="/ledger/:id" element={<PrivateRoute><AccountLedger /></PrivateRoute>} />
+          <Route path="/reminders" element={<PrivateRoute><Reminders /></PrivateRoute>} />
         </Routes>
       </Router>
     </ThemeProvider>

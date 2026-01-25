@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LucideHome, LucideWallet, LucideTrendingUp, LucideUser } from 'lucide-react';
+import { LucideHome, LucideWallet, LucideBell, LucideUser, LucideTrendingUp } from 'lucide-react';
 
 const Navigation = () => {
   const navigate = useNavigate();
@@ -8,7 +8,7 @@ const Navigation = () => {
   const navItems = [
     { id: '/', icon: LucideHome, label: 'Home' },
     { id: '/transactions', icon: LucideWallet, label: 'Wallet' },
-    { id: '/calculator', icon: LucideTrendingUp, label: 'Calculator' },
+    { id: '/reminders', icon: LucideBell, label: 'Alerts' },
     { id: '/profile', icon: LucideUser, label: 'Profile' }
   ];
 
