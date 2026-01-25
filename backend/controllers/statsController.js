@@ -2,31 +2,63 @@ const Account = require('../models/Account');
 const Transaction = require('../models/Transaction');
 const mongoose = require('mongoose');
 
+// Helper for interest calculation
+const calculateInterest = (principal, rate, type, startDate) => {
+    const now = new Date();
+    const start = new Date(startDate);
+    const months = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
+    if (months <= 0) return 0;
+
+    if (type === 'Simple') {
+        return (principal * (rate / 100) * months);
+    } else {
+        return principal * (Math.pow((1 + rate / 100), months)) - principal;
+    }
+};
+
 // Get overview stats for the dashboard
 exports.getOverview = async (req, res) => {
     try {
         const userId = req.user.id;
         const userObjectId = new mongoose.Types.ObjectId(userId);
 
-        // Find all accounts for the user
         const accounts = await Account.find({ userId });
+        const transactions = await Transaction.find({ userId });
 
-        // Calculate total amount lent (outstanding balance)
+        let totalGiven = 0;
+        let totalTaken = 0;
+        let interestEarned = 0;
+        let interestPayable = 0;
+
+        transactions.forEach(t => {
+            if (t.isRepayment) return; // Skip repayments for gross total calculation
+
+            if (t.type === 'Given') {
+                totalGiven += t.amount;
+                if (t.status === 'Active') {
+                    interestEarned += calculateInterest(t.amount, t.interestRate, t.interestType, t.date);
+                }
+            } else {
+                totalTaken += t.amount;
+                if (t.status === 'Active') {
+                    interestPayable += calculateInterest(t.amount, t.interestRate, t.interestType, t.date);
+                }
+            }
+        });
+
+        // Net Outstanding from accounts (this accounts for repayments already)
         const totalOutstanding = accounts.reduce((sum, acc) => sum + acc.outstandingBalance, 0);
 
-        // Get top performance accounts
         const topAccounts = await Account.find({ userId })
             .sort({ outstandingBalance: -1 })
             .limit(5);
 
-        // Get recent active transactions for the "Payments Due" slider
-        // In a real app, you'd filter by due date. Here we take the latest 5.
         const duePayments = await Transaction.find({ userId, status: 'Active' })
             .populate('accountId', 'name')
             .sort({ date: -1 })
             .limit(5);
 
-        // Monthly Cash Flow Data
+        // Monthly Stats for Inflow/Outflow/Interest
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
@@ -36,13 +68,19 @@ exports.getOverview = async (req, res) => {
                 $group: {
                     _id: { month: { $month: "$date" }, year: { $year: "$date" } },
                     given: { $sum: { $cond: [{ $eq: ["$type", "Given"] }, "$amount", 0] } },
-                    taken: { $sum: { $cond: [{ $eq: ["$type", "Taken"] }, "$amount", 0] } }
+                    taken: { $sum: { $cond: [{ $eq: ["$type", "Taken"] }, "$amount", 0] } },
+                    // Simplified: track count as proxy for interest activity
+                    count: { $sum: 1 }
                 }
             },
             { $sort: { "_id.year": 1, "_id.month": 1 } }
         ]);
 
         res.json({
+            totalGiven,
+            totalTaken,
+            interestEarned: interestEarned.toFixed(2),
+            interestPayable: interestPayable.toFixed(2),
             totalOutstanding,
             topAccounts,
             duePayments,
@@ -58,21 +96,13 @@ exports.getReminders = async (req, res) => {
     try {
         const userId = req.user.id;
         const now = new Date();
-
-        // Find all active transactions
         const transactions = await Transaction.find({ userId, status: 'Active' }).populate('accountId', 'name');
 
-        const reminders = {
-            overdue: [],
-            today: [],
-            upcoming: []
-        };
+        const reminders = { overdue: [], today: [], upcoming: [] };
 
         transactions.forEach(t => {
             const startDate = new Date(t.date);
             let nextDue = new Date(startDate);
-
-            // Simplified logic: calculate next due date based on frequency
             if (t.paymentFrequency === 'Monthly') nextDue.setMonth(nextDue.getMonth() + 1);
             else if (t.paymentFrequency === 'Daily') nextDue.setDate(nextDue.getDate() + 1);
             else if (t.paymentFrequency === 'Weekly') nextDue.setDate(nextDue.getDate() + 7);
@@ -94,7 +124,6 @@ exports.getReminders = async (req, res) => {
             else if (diffDays === 0) reminders.today.push(reminderObj);
             else if (diffDays <= 7) reminders.upcoming.push(reminderObj);
         });
-
         res.json(reminders);
     } catch (error) {
         res.status(500).json({ message: error.message });
