@@ -29,7 +29,8 @@ exports.createTransaction = async (req, res) => {
             interestRate,
             interestType,
             paymentFrequency,
-            notes
+            notes,
+            screenshot: req.file ? req.file.path : null
         });
 
         const transaction = await newTransaction.save();

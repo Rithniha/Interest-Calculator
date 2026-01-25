@@ -7,7 +7,12 @@ import SelectCustomer from './pages/SelectCustomer';
 import AddTransaction from './pages/AddTransaction';
 import InterestCalculator from './pages/InterestCalculator';
 import api from './utils/api';
-import { LucideHome, LucideWallet, LucideTrendingUp, LucideUser, LucidePlus, LucideCalculator } from 'lucide-react';
+import { exportToPDF, exportToExcel } from './utils/reports';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
+import {
+  LucideHome, LucideWallet, LucideTrendingUp, LucideUser,
+  LucidePlus, LucideCalculator, LucideBell, LucideRefreshCw, LucideDownload
+} from 'lucide-react';
 
 // Protected Route Component
 const PrivateRoute = ({ children }) => {
@@ -18,7 +23,8 @@ const PrivateRoute = ({ children }) => {
 const Dashboard = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ totalOutstanding: 0, topAccounts: [] });
+  const { role, toggleRole } = useTheme();
+  const [stats, setStats] = useState({ totalOutstanding: 0, topAccounts: [], duePayments: [] });
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -30,67 +36,118 @@ const Dashboard = () => {
       }
     };
     fetchStats();
-  }, []);
+  }, [role]); // Refresh when role changes
 
   return (
-    <div className="container">
+    <div className="container" style={{ background: 'var(--bg-main)' }}>
       <header style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <p style={{ color: 'var(--gray-500)' }}>Hello {user.fullName || 'User'}!</p>
-          <h2 style={{ fontSize: '1.2rem' }}>Welcome back</h2>
-        </div>
-        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-          <div
-            style={{ background: 'white', padding: '8px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', cursor: 'pointer' }}
-            onClick={() => navigate('/calculator')}
-          >
-            <LucideCalculator size={20} color="var(--primary)" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '45px', height: '45px', borderRadius: '50%', background: 'white', overflow: 'hidden', border: '2px solid white', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
+            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.fullName}`} alt="Avatar" />
           </div>
-          <div style={{ background: 'white', padding: '8px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-            <LucideUser size={20} color="var(--primary)" />
+          <div>
+            <p style={{ color: 'var(--gray-500)', fontSize: '12px', margin: 0 }}>Hello {user.fullName || 'User'}!</p>
+            <h2 style={{ fontSize: '1rem', margin: 0 }}>Welcome back</h2>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div
+            onClick={() => exportToPDF(stats.topAccounts, 'Investor_Performance')}
+            style={{ background: 'white', padding: '10px', borderRadius: '14px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', cursor: 'pointer', color: 'var(--primary)' }}
+            title="Download PDF"
+          >
+            <LucideDownload size={20} />
+          </div>
+          <div
+            onClick={toggleRole}
+            style={{ background: 'white', padding: '10px', borderRadius: '14px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', cursor: 'pointer', color: 'var(--primary)' }}
+            title="Switch Role"
+          >
+            <LucideRefreshCw size={20} />
+          </div>
+          <div
+            onClick={() => navigate('/calculator')}
+            style={{ background: 'white', padding: '10px', borderRadius: '14px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', cursor: 'pointer', color: 'var(--primary)' }}
+          >
+            <LucideCalculator size={20} />
+          </div>
+          <div style={{ background: 'white', padding: '10px', borderRadius: '14px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', color: 'var(--primary)' }}>
+            <LucideBell size={20} />
           </div>
         </div>
       </header>
 
       <div style={{ padding: '0 20px' }}>
-        <div className="card" style={{ background: 'var(--white)', padding: '25px', position: 'relative', overflow: 'hidden' }}>
+        {/* Main Balance Card */}
+        <div className="card" style={{ background: 'var(--white)', padding: '25px', position: 'relative', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.03)' }}>
           <p style={{ color: 'var(--gray-500)', marginBottom: '10px' }}>Available amount</p>
-          <h1 style={{ fontSize: '2rem', marginBottom: '20px' }}>₹ {stats.totalOutstanding.toLocaleString()}</h1>
-          <button className="btn btn-primary" style={{ width: '100%', borderRadius: '16px' }}>Redeem Now</button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+            <h1 style={{ fontSize: '2.2rem', margin: 0 }}>₹ {stats.totalOutstanding.toLocaleString()}</h1>
+            <button className="btn btn-primary" style={{ borderRadius: '16px', padding: '12px 20px' }}>Redeem Now</button>
+          </div>
+          <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid var(--gray-100)', display: 'flex', justifyContent: 'space-between' }}>
+            <p style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Total redeem: <span style={{ color: 'var(--success)' }}>₹ 0.00</span></p>
+            <p style={{ fontSize: '12px', color: 'var(--primary)', fontWeight: 'bold' }}>View history</p>
+          </div>
         </div>
 
-        <div style={{ marginTop: '30px' }}>
-          <h3 style={{ marginBottom: '15px' }}>Investor Performance</h3>
+        {/* Payments Due Slider */}
+        <div style={{ marginTop: '25px' }}>
+          <h3 style={{ marginBottom: '15px', fontSize: '1.1rem' }}>Payments Due</h3>
+          <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '15px', scrollbarWidth: 'none' }}>
+            {stats.duePayments.length === 0 ? (
+              <p style={{ color: 'var(--gray-500)', fontSize: '14px' }}>No payments due today.</p>
+            ) : (
+              stats.duePayments.map((p, idx) => (
+                <div key={idx} className="card" style={{ minWidth: '110px', padding: '15px', textAlign: 'center', marginBottom: 0, boxShadow: '0 4px 15px rgba(0,0,0,0.04)' }}>
+                  <p style={{ color: 'var(--error)', fontWeight: 'bold', margin: '0 0 8px 0', fontSize: '14px' }}>₹ {p.amount}</p>
+                  <p style={{ fontSize: '10px', color: 'var(--gray-500)', marginBottom: '10px' }}>Today</p>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--gray-100)', margin: '0 auto', overflow: 'hidden' }}>
+                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${p.accountId?.name}`} alt="user" />
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Action Button */}
+        <button
+          className="btn btn-primary"
+          onClick={() => navigate('/select-customer')}
+          style={{ position: 'fixed', bottom: '100px', left: '50%', transform: 'translateX(-50%)', borderRadius: '30px', padding: '15px 30px', gap: '10px', boxShadow: `0 8px 25px ${role === 'Borrower' ? 'rgba(94, 104, 177, 0.4)' : 'rgba(209, 107, 60, 0.4)'}`, zIndex: 100 }}
+        >
+          <LucidePlus size={20} /> Add Transactions
+        </button>
+
+        {/* Investor Performance */}
+        <div style={{ marginTop: '25px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+            <h3 style={{ margin: 0, fontSize: '1.1rem' }}>{role === 'Borrower' ? 'Investor' : 'Borrower'} Performance</h3>
+            <p style={{ color: 'var(--primary)', fontSize: '12px', fontWeight: 'bold' }}>View All</p>
+          </div>
           {stats.topAccounts.length === 0 ? (
             <div className="card" style={{ textAlign: 'center', color: 'var(--gray-500)', padding: '40px' }}>
               <p>No transactions yet.</p>
-              <p style={{ fontSize: '14px' }}>Click the + button to add one!</p>
             </div>
           ) : (
             stats.topAccounts.map(acc => (
-              <div key={acc._id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--gray-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-                  {acc.name.charAt(0)}
+              <div key={acc._id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', marginBottom: '12px' }}>
+                <div style={{ width: '45px', height: '45px', borderRadius: '50%', background: 'var(--gray-100)', overflow: 'hidden' }}>
+                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${acc.name}`} alt="avatar" />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <h4 style={{ margin: 0 }}>{acc.name}</h4>
-                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--gray-500)' }}>{acc.role}</p>
+                  <h4 style={{ margin: 0, fontSize: '14px' }}>{acc.name}</h4>
+                  <p style={{ margin: 0, fontSize: '11px', color: 'var(--gray-500)' }}>{new Date(acc.createdAt).toLocaleDateString()}</p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <p style={{ margin: 0, fontWeight: 'bold' }}>₹ {acc.outstandingBalance.toLocaleString()}</p>
+                  <p style={{ margin: 0, fontWeight: 'bold', fontSize: '14px' }}>₹ {acc.outstandingBalance.toLocaleString()}</p>
+                  <p style={{ margin: 0, fontSize: '10px', color: 'var(--gray-500)' }}>1.5% (3K)</p>
                 </div>
               </div>
             ))
           )}
         </div>
-
-        <button
-          className="btn btn-primary"
-          onClick={() => navigate('/select-customer')}
-          style={{ position: 'fixed', bottom: '100px', left: '50%', transform: 'translateX(-50%)', borderRadius: '30px', padding: '15px 30px', gap: '10px', boxShadow: '0 8px 20px rgba(94, 104, 177, 0.3)', zIndex: 100 }}
-        >
-          <LucidePlus size={20} /> Add Transactions
-        </button>
       </div>
 
       <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: '75px', background: 'white', display: 'flex', justifyContent: 'space-around', alignItems: 'center', boxShadow: '0 -4px 15px rgba(0,0,0,0.05)', borderTopLeftRadius: '30px', borderTopRightRadius: '30px', padding: '0 10px', zIndex: 100 }}>
@@ -108,8 +165,8 @@ const Dashboard = () => {
 
 function App() {
   return (
-    <Router>
-      <div data-theme="borrower">
+    <ThemeProvider>
+      <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -119,8 +176,8 @@ function App() {
           <Route path="/add-transaction/:accountId" element={<PrivateRoute><AddTransaction /></PrivateRoute>} />
           <Route path="/calculator" element={<PrivateRoute><InterestCalculator /></PrivateRoute>} />
         </Routes>
-      </div>
-    </Router>
+      </Router>
+    </ThemeProvider>
   );
 }
 

@@ -1,4 +1,5 @@
 const Account = require('../models/Account');
+const Transaction = require('../models/Transaction');
 
 // Get overview stats for the dashboard
 exports.getOverview = async (req, res) => {
@@ -16,9 +17,17 @@ exports.getOverview = async (req, res) => {
             .sort({ outstandingBalance: -1 })
             .limit(5);
 
+        // Get recent active transactions for the "Payments Due" slider
+        // In a real app, you'd filter by due date. Here we take the latest 5.
+        const duePayments = await Transaction.find({ userId, status: 'Active' })
+            .populate('accountId', 'name')
+            .sort({ date: -1 })
+            .limit(5);
+
         res.json({
             totalOutstanding,
-            topAccounts
+            topAccounts,
+            duePayments
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
