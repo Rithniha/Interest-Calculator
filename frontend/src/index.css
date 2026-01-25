@@ -2,9 +2,12 @@
   /* Common Colors */
   --white: #ffffff;
   --black: #000000;
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-  --gray-500: #6b7280;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
   --success: #10b981;
   --error: #ef4444;
 
@@ -44,10 +47,12 @@ body {
 }
 
 .container {
-  max-width: 480px; /* Mobile-first container */
+  max-width: 480px;
+  /* Mobile-first container */
   margin: 0 auto;
   min-height: 100vh;
-  padding-bottom: 80px; /* Space for bottom nav */
+  padding-bottom: 80px;
+  /* Space for bottom nav */
 }
 
 /* Glassmorphism / Modern Cards */

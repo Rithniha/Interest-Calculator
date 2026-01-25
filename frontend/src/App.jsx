@@ -1,18 +1,22 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useNavigate, useLocation, BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AddContact from './pages/AddContact';
 import SelectCustomer from './pages/SelectCustomer';
 import AddTransaction from './pages/AddTransaction';
 import InterestCalculator from './pages/InterestCalculator';
+import Profile from './pages/Profile';
+import Transactions from './pages/Transactions';
 import api from './utils/api';
 import { exportToPDF, exportToExcel } from './utils/reports';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import {
   LucideHome, LucideWallet, LucideTrendingUp, LucideUser,
-  LucidePlus, LucideCalculator, LucideBell, LucideRefreshCw, LucideDownload
+  LucidePlus, LucideCalculator, LucideRefreshCw, LucideDownload
 } from 'lucide-react';
+
+import Navigation from './components/Navigation';
 
 // Protected Route Component
 const PrivateRoute = ({ children }) => {
@@ -71,8 +75,11 @@ const Dashboard = () => {
           >
             <LucideCalculator size={20} />
           </div>
-          <div style={{ background: 'white', padding: '10px', borderRadius: '14px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', color: 'var(--primary)' }}>
-            <LucideBell size={20} />
+          <div
+            style={{ background: 'white', padding: '10px', borderRadius: '14px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', cursor: 'pointer', color: 'var(--primary)' }}
+            onClick={() => navigate('/profile')}
+          >
+            <LucideUser size={20} />
           </div>
         </div>
       </header>
@@ -83,16 +90,21 @@ const Dashboard = () => {
           <p style={{ color: 'var(--gray-500)', marginBottom: '10px' }}>Available amount</p>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
             <h1 style={{ fontSize: '2.2rem', margin: 0 }}>₹ {stats.totalOutstanding.toLocaleString()}</h1>
-            <button className="btn btn-primary" style={{ borderRadius: '16px', padding: '12px 20px' }}>Redeem Now</button>
+            <button className="btn btn-primary" onClick={() => navigate('/calculator')} style={{ borderRadius: '16px', padding: '12px 20px' }}>Redeem Now</button>
           </div>
           <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid var(--gray-100)', display: 'flex', justifyContent: 'space-between' }}>
             <p style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Total redeem: <span style={{ color: 'var(--success)' }}>₹ 0.00</span></p>
-            <p style={{ fontSize: '12px', color: 'var(--primary)', fontWeight: 'bold' }}>View history</p>
+            <p
+              onClick={() => navigate('/transactions')}
+              style={{ fontSize: '12px', color: 'var(--primary)', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              View history
+            </p>
           </div>
         </div>
 
         {/* Payments Due Slider */}
-        <div style={{ marginTop: '25px' }}>
+        <div style={{ marginTop: '25px', marginBottom: '100px' }}>
           <h3 style={{ marginBottom: '15px', fontSize: '1.1rem' }}>Payments Due</h3>
           <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '15px', scrollbarWidth: 'none' }}>
             {stats.duePayments.length === 0 ? (
@@ -115,16 +127,21 @@ const Dashboard = () => {
         <button
           className="btn btn-primary"
           onClick={() => navigate('/select-customer')}
-          style={{ position: 'fixed', bottom: '100px', left: '50%', transform: 'translateX(-50%)', borderRadius: '30px', padding: '15px 30px', gap: '10px', boxShadow: `0 8px 25px ${role === 'Borrower' ? 'rgba(94, 104, 177, 0.4)' : 'rgba(209, 107, 60, 0.4)'}`, zIndex: 100 }}
+          style={{ position: 'fixed', bottom: '105px', left: '50%', transform: 'translateX(-50%)', borderRadius: '30px', padding: '15px 30px', gap: '10px', boxShadow: `0 8px 30px ${role === 'Borrower' ? 'rgba(94, 104, 177, 0.4)' : 'rgba(209, 107, 60, 0.4)'}`, zIndex: 100 }}
         >
           <LucidePlus size={20} /> Add Transactions
         </button>
 
         {/* Investor Performance */}
-        <div style={{ marginTop: '25px' }}>
+        <div style={{ marginTop: '25px', paddingBottom: '120px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
             <h3 style={{ margin: 0, fontSize: '1.1rem' }}>{role === 'Borrower' ? 'Investor' : 'Borrower'} Performance</h3>
-            <p style={{ color: 'var(--primary)', fontSize: '12px', fontWeight: 'bold' }}>View All</p>
+            <p
+              onClick={() => navigate('/select-customer')}
+              style={{ color: 'var(--primary)', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              View All
+            </p>
           </div>
           {stats.topAccounts.length === 0 ? (
             <div className="card" style={{ textAlign: 'center', color: 'var(--gray-500)', padding: '40px' }}>
@@ -150,15 +167,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: '75px', background: 'white', display: 'flex', justifyContent: 'space-around', alignItems: 'center', boxShadow: '0 -4px 15px rgba(0,0,0,0.05)', borderTopLeftRadius: '30px', borderTopRightRadius: '30px', padding: '0 10px', zIndex: 100 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-          <LucideHome size={24} color="var(--primary)" />
-          <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--primary)' }}></div>
-        </div>
-        <LucideWallet size={24} color="var(--gray-200)" />
-        <LucideTrendingUp size={24} color="var(--gray-200)" />
-        <LucideUser size={24} color="var(--gray-200)" />
-      </nav>
+      <Navigation />
     </div>
   );
 };
@@ -175,6 +184,8 @@ function App() {
           <Route path="/select-customer" element={<PrivateRoute><SelectCustomer /></PrivateRoute>} />
           <Route path="/add-transaction/:accountId" element={<PrivateRoute><AddTransaction /></PrivateRoute>} />
           <Route path="/calculator" element={<PrivateRoute><InterestCalculator /></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/transactions" element={<PrivateRoute><Transactions /></PrivateRoute>} />
         </Routes>
       </Router>
     </ThemeProvider>
