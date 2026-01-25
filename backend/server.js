@@ -18,6 +18,12 @@ mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('✅ Connected to MongoDB'))
     .catch((err) => console.error('❌ MongoDB Connection Error:', err));
 
+// Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/accounts', require('./routes/accountRoutes'));
+app.use('/api/transactions', require('./routes/transactionRoutes'));
+app.use('/api/stats', require('./routes/statsRoutes'));
+
 // Basic Route
 app.get('/', (req, res) => {
     res.send('Interest Calculator API is running...');
