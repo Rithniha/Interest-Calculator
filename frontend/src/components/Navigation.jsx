@@ -13,23 +13,25 @@ const Navigation = () => {
   ];
 
   return (
-    <nav style={{ 
-      position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-      width: '100%', maxWidth: '480px', height: '85px', 
-      background: 'white', display: 'flex', justifyContent: 'space-around', 
-      alignItems: 'center', boxShadow: '0 -10px 40px rgba(0,0,0,0.1)', 
-      borderTopLeftRadius: '30px', borderTopRightRadius: '30px', padding: '0 10px', zIndex: 100 
+    <nav style={{
+      position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
+      width: '90%', maxWidth: '400px', height: '75px',
+      background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(10px)',
+      display: 'flex', justifyContent: 'space-around',
+      alignItems: 'center', boxShadow: '0 15px 35px rgba(0,0,0,0.1)',
+      borderRadius: '25px', padding: '0 20px', zIndex: 1000,
+      border: '1px solid rgba(255, 255, 255, 0.3)'
     }}>
       {navItems.map((item) => {
         const isActive = location.pathname === item.id;
         const Icon = item.icon;
         return (
-          <div 
+          <div
             key={item.id}
-            onClick={() => navigate(item.id)} 
-            style={{ 
-              display: 'flex', flexDirection: 'column', alignItems: 'center', 
-              gap: '4px', cursor: 'pointer', flex: 1, transition: 'all 0.3s ease' 
+            onClick={() => navigate(item.id)}
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              gap: '4px', cursor: 'pointer', flex: 1, transition: 'all 0.3s ease'
             }}
           >
             <div style={{
@@ -45,7 +47,7 @@ const Navigation = () => {
             }}>
               <Icon size={isActive ? 26 : 22} strokeWidth={isActive ? 2.5 : 2} />
             </div>
-            <p style={{ 
+            <p style={{
               margin: 0, fontSize: '10px', fontWeight: isActive ? '800' : '600',
               color: isActive ? 'var(--primary)' : '#64748b',
               textTransform: 'uppercase', letterSpacing: '0.5px'
