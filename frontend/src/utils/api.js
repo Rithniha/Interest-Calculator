@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:5001/api',
+    baseURL: 'https://interest-calculator-j271.onrender.com/api',
 });
 
 // Automatically add the token to every request if it exists
