@@ -35,12 +35,15 @@ const Dashboard = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const navigate = useNavigate();
   const { role, toggleRole } = useTheme();
-  const [stats, setStats] = useState({
-    totalGiven: 0, totalTaken: 0, interestEarned: 0, interestPayable: 0,
-    totalOutstanding: 0, topAccounts: [], duePayments: [], monthlyStats: []
-  });
+  const [stats, setStats] = useState({ totalOutstanding: 0, topAccounts: [], duePayments: [], monthlyStats: [] });
   const [reminders, setReminders] = useState({ overdue: [] });
   const [showAlert, setShowAlert] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -61,133 +64,196 @@ const Dashboard = () => {
     fetchStats();
   }, [role]);
 
+  // Format data for charts
   const chartData = stats.monthlyStats?.map(s => ({
     name: new Date(0, s._id.month - 1).toLocaleString('default', { month: 'short' }),
     given: s.given,
-    taken: s.taken,
-    interest: (s.count * 100) // Mock interest growth for viz
+    taken: s.taken
   })) || [];
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/login');
-  };
 
   return (
     <div className="container" style={{ background: 'var(--bg-main)' }}>
-      {/* Top Bar */}
-      <header style={{ padding: '25px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1 style={{ fontSize: '1.4rem', fontWeight: '900', margin: 0, letterSpacing: '-0.5px', color: 'var(--primary)' }}>Interest Hub</h1>
-          <p style={{ margin: 0, fontSize: '11px', color: 'var(--gray-500)', fontWeight: '700' }}>PRECISION FINANCE</p>
+      <header style={{ padding: '30px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div style={{ width: '50px', height: '50px', borderRadius: '15px', background: 'white', overflow: 'hidden', border: '2px solid white', boxShadow: '0 8px 15px rgba(0,0,0,0.08)' }}>
+            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.fullName}`} alt="Avatar" />
+          </div>
+          <div>
+            <p style={{ color: 'var(--gray-500)', fontSize: '13px', margin: 0 }}>Hello {user.fullName || 'User'}!</p>
+            <h2 style={{ fontSize: '1.2rem', margin: 0, fontWeight: '800' }}>Welcome back</h2>
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div
-            onClick={() => navigate('/reminders')}
-            style={{ position: 'relative', background: 'white', padding: '10px', borderRadius: '12px', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}
-          >
-            <LucideBell size={20} color={reminders.overdue.length > 0 ? 'var(--error)' : 'var(--gray-500)'} className={reminders.overdue.length > 0 ? 'shake' : ''} />
-            {reminders.overdue.length > 0 && <span style={{ position: 'absolute', top: -5, right: -5, background: 'var(--error)', color: 'white', fontSize: '10px', padding: '2px 6px', borderRadius: '10px', fontWeight: '900', border: '2px solid var(--bg-main)' }}>{reminders.overdue.length}</span>}
-          </div>
-          <div onClick={() => navigate('/profile')} style={{ width: '45px', height: '45px', borderRadius: '14px', background: 'white', overflow: 'hidden', border: '2px solid white', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
-            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.fullName}`} alt="Profile" />
-          </div>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          {[
+            { icon: LucideDownload, title: 'Download PDF', onClick: () => exportToPDF(stats.topAccounts, 'Investor_Performance') },
+            { icon: LucideBell, title: 'Reminders', onClick: () => navigate('/reminders'), color: reminders.overdue.length > 0 ? 'var(--error)' : 'var(--primary)' },
+            { icon: LucideRefreshCw, title: 'Switch Role', onClick: toggleRole },
+            { icon: LucideCalculator, title: 'Calculator', onClick: () => navigate('/calculator') },
+            { icon: LucideUser, title: 'Profile', onClick: () => navigate('/profile') },
+            { icon: LucideLogOut, title: 'Logout', onClick: handleLogout, color: 'var(--error)' }
+          ].map((item, idx) => (
+            <div
+              key={idx}
+              onClick={item.onClick}
+              style={{
+                background: 'white', padding: '12px', borderRadius: '14px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.04)', cursor: 'pointer',
+                color: item.color || 'var(--primary)', transition: 'all 0.2s ease'
+              }}
+              title={item.title}
+              className="header-icon-hover"
+            >
+              <item.icon size={20} />
+            </div>
+          ))}
         </div>
       </header>
 
       <div style={{ padding: '0 20px' }}>
-        {/* Onboarding Alert */}
+        {/* Overdue Alert Pop-up */}
         {showAlert && (
-          <div className="card" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--error)', color: 'var(--error)', padding: '15px 20px', borderRadius: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', animation: 'slideDown 0.4s ease' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <LucideAlertTriangle size={20} />
-              <p style={{ margin: 0, fontWeight: '800', fontSize: '13px' }}>{reminders.overdue.length} Overdue Dues Detected!</p>
+          <div className="card" style={{ background: 'var(--error)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', padding: '15px 25px', animation: 'slideDown 0.5s ease' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <LucideBell className="shake" />
+              <p style={{ margin: 0, fontWeight: '700' }}>You have {reminders.overdue.length} Overdue Payments!</p>
             </div>
-            <button onClick={() => navigate('/reminders')} style={{ background: 'var(--error)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>Resolve Now</button>
+            <button onClick={() => navigate('/reminders')} style={{ background: 'white', color: 'var(--error)', border: 'none', padding: '8px 15px', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}>View Now</button>
           </div>
         )}
-
-        {/* 1. Summary Cards Section */}
-        <h2 style={{ fontSize: '1rem', fontWeight: '800', marginBottom: '15px', paddingLeft: '5px' }}>Financial Snapshot</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px', marginBottom: '30px' }}>
-
-          <div className="card" style={{ background: 'var(--primary)', color: 'white', gridColumn: '1 / 3', padding: '25px' }}>
-            <p style={{ margin: 0, fontSize: '12px', opacity: 0.8, fontWeight: '600' }}>Outstanding Balance</p>
-            <h2 style={{ fontSize: '2.2rem', margin: '5px 0', fontWeight: '900' }}>₹ {stats.totalOutstanding.toLocaleString()}</h2>
-            <div style={{ width: '40px', height: '4px', background: 'rgba(255,255,255,0.3)', borderRadius: '2px', marginTop: '10px' }}></div>
-          </div>
-
-          <div className="card" style={{ padding: '20px' }}>
-            <LucideTrendingUp size={18} color="var(--primary)" style={{ marginBottom: '10px' }} />
-            <p style={{ margin: 0, fontSize: '11px', color: 'var(--gray-500)', fontWeight: '700' }}>TOTAL GIVEN</p>
-            <h3 style={{ margin: '5px 0', fontSize: '1.2rem', fontWeight: '900' }}>₹ {stats.totalGiven.toLocaleString()}</h3>
-            <p style={{ margin: 0, fontSize: '10px', color: 'var(--success)', fontWeight: 'bold' }}>+ ₹ {stats.interestEarned} earned</p>
-          </div>
-
-          <div className="card" style={{ padding: '20px' }}>
-            <LucideTrendingDown size={18} color="var(--error)" style={{ marginBottom: '10px' }} />
-            <p style={{ margin: 0, fontSize: '11px', color: 'var(--gray-500)', fontWeight: '700' }}>TOTAL TAKEN</p>
-            <h3 style={{ margin: '5px 0', fontSize: '1.2rem', fontWeight: '900' }}>₹ {stats.totalTaken.toLocaleString()}</h3>
-            <p style={{ margin: 0, fontSize: '10px', color: 'var(--error)', fontWeight: 'bold' }}>- ₹ {stats.interestPayable} payable</p>
-          </div>
-        </div>
-
-        {/* 2. Charts Section */}
-        <div className="grid-layout" style={{ marginBottom: '30px' }}>
-          <div className="card">
-            <h3 style={{ fontSize: '0.9rem', fontWeight: '800', marginBottom: '20px' }}>Inflow vs Outflow</h3>
-            <div style={{ height: '220px', width: '100%' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700 }} />
-                  <Tooltip cursor={{ fill: '#f8fafc' }} />
-                  <Bar dataKey="given" fill="var(--primary)" radius={[4, 4, 0, 0]} name="Lent" />
-                  <Bar dataKey="taken" fill="#cbd5e1" radius={[4, 4, 0, 0]} name="Borrowed" />
-                </BarChart>
-              </ResponsiveContainer>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '20px' }}>
+          {/* Main Balance Card */}
+          <div className="card" style={{ background: 'var(--primary)', color: 'white', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div>
+                <p style={{ fontSize: '12px', opacity: 0.8, marginBottom: '5px' }}>Total Outstanding</p>
+                <h1 style={{ fontSize: '2.5rem', margin: 0, fontWeight: '900' }}>₹ {stats.totalOutstanding.toLocaleString()}</h1>
+              </div>
+              <button onClick={() => navigate('/calculator')} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', padding: '10px 20px', borderRadius: '14px', height: 'fit-content', fontWeight: 'bold', cursor: 'pointer' }}>
+                Interest Calc
+              </button>
+            </div>
+            <div style={{ display: 'flex', gap: '20px', paddingTop: '15px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+              <div>
+                <p style={{ fontSize: '10px', opacity: 0.7 }}>Earned (est.)</p>
+                <p style={{ margin: 0, fontWeight: 'bold' }}>₹ 1,240.00</p>
+              </div>
+              <div style={{ borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '20px' }}>
+                <p style={{ fontSize: '10px', opacity: 0.7 }}>Active Accounts</p>
+                <p style={{ margin: 0, fontWeight: 'bold' }}>{stats.topAccounts.length}</p>
+              </div>
             </div>
           </div>
 
-          <div className="card">
-            <h3 style={{ fontSize: '0.9rem', fontWeight: '800', marginBottom: '20px' }}>Interest Growth</h3>
-            <div style={{ height: '220px', width: '100%' }}>
+          {/* Quick Analysis Graph */}
+          <div className="card" style={{ padding: '20px' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: '800', marginBottom: '15px' }}>Monthly Cash Flow</h3>
+            <div style={{ height: '140px', width: '100%' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData}>
                   <defs>
-                    <linearGradient id="interestGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.2} />
+                    <linearGradient id="colorGiven" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <Tooltip />
-                  <Area type="monotone" dataKey="interest" stroke="var(--primary)" strokeWidth={3} fillOpacity={1} fill="url(#interestGrad)" />
+                  <Area type="monotone" dataKey="given" stroke="var(--primary)" fillOpacity={1} fill="url(#colorGiven)" strokeWidth={3} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
         </div>
 
-        {/* 3. Quick Actions */}
-        <h2 style={{ fontSize: '1rem', fontWeight: '800', marginBottom: '15px', paddingLeft: '5px' }}>Quick Actions</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', marginBottom: '50px' }}>
-          {[
-            { label: 'New Loan', icon: LucidePlus, color: 'var(--primary)', bg: 'rgba(94, 104, 177, 0.1)', path: '/select-customer' },
-            { label: 'Accounts', icon: LucideUser, color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', path: '/select-customer' },
-            { label: 'Dues', icon: LucideBell, color: 'var(--error)', bg: 'rgba(239, 68, 68, 0.1)', path: '/reminders' }
-          ].map((action, idx) => (
-            <div
-              key={idx}
-              onClick={() => navigate(action.path)}
-              style={{ padding: '20px 10px', textAlign: 'center', cursor: 'pointer', borderRadius: '24px', background: 'white', boxShadow: '0 4px 15px rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.03)' }}
-            >
-              <div style={{ width: '45px', height: '45px', borderRadius: '15px', background: action.bg, color: action.color, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
-                <action.icon size={22} />
-              </div>
-              <p style={{ margin: 0, fontSize: '11px', fontWeight: '800', color: 'var(--gray-600)' }}>{action.label}</p>
+        {/* Action Button */}
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '30px 0' }}>
+          <button
+            className="btn btn-primary"
+            onClick={() => navigate('/select-customer')}
+            style={{ borderRadius: '40px', padding: '15px 45px', gap: '12px', fontSize: '16px', boxShadow: `0 12px 35px ${role === 'Borrower' ? 'rgba(94, 104, 177, 0.4)' : 'rgba(209, 107, 60, 0.4)'}`, fontWeight: '800' }}
+          >
+            <LucidePlus size={22} /> Add Portfolio Entry
+          </button>
+        </div>
+
+        {/* Detailed Reports Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '800' }}>Portfolio Stats</h3>
+              <p style={{ margin: 0, fontSize: '12px', color: 'var(--primary)', fontWeight: 'bold' }}>Last 6 Months</p>
             </div>
-          ))}
+            <div style={{ height: '220px', width: '100%' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700 }} />
+                  <Tooltip cursor={{ fill: 'transparent' }} />
+                  <Legend verticalAlign="top" align="right" iconType="circle" />
+                  <Bar dataKey="given" fill="var(--primary)" radius={[4, 4, 0, 0]} name="Lent" />
+                  <Bar dataKey="taken" fill="var(--error)" radius={[4, 4, 0, 0]} name="Borrowed" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="card">
+            <h3 style={{ marginBottom: '20px', fontSize: '1rem', fontWeight: '800' }}>Payments Status</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              {stats.duePayments.length === 0 ? (
+                <p style={{ color: 'var(--gray-500)', fontSize: '14px', textAlign: 'center', padding: '40px' }}>All payments up to date!</p>
+              ) : (
+                stats.duePayments.map((p, idx) => (
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--gray-100)', borderRadius: '15px', cursor: 'pointer' }} onClick={() => navigate(`/ledger/${p.accountId?._id}`)}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', overflow: 'hidden' }}>
+                      <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${p.accountId?.name}`} alt="user" />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: 0, fontSize: '14px', fontWeight: '700' }}>{p.accountId?.name}</p>
+                      <p style={{ margin: 0, fontSize: '11px', color: 'var(--gray-500)' }}>Due: Today</p>
+                    </div>
+                    <p style={{ margin: 0, fontWeight: '800', color: 'var(--error)' }}>₹ {p.amount}</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Portfolio Table */}
+        <div style={{ paddingBottom: '120px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '800' }}>Active Portfolios</h3>
+            <p
+              onClick={() => navigate('/select-customer')}
+              style={{ color: 'var(--primary)', fontSize: '14px', fontWeight: '800', cursor: 'pointer' }}
+            >
+              View All
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '20px' }}>
+            {stats.topAccounts.length === 0 ? (
+              <div className="card" style={{ textAlign: 'center', color: 'var(--gray-500)', padding: '60px', gridColumn: '1 / -1' }}>
+                <p>No activity yet.</p>
+              </div>
+            ) : (
+              stats.topAccounts.map(acc => (
+                <div key={acc._id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '20px', cursor: 'pointer' }} onClick={() => navigate(`/ledger/${acc._id}`)}>
+                  <div style={{ width: '55px', height: '55px', borderRadius: '18px', background: 'var(--gray-100)', overflow: 'hidden', border: '2px solid var(--gray-100)' }}>
+                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${acc.name}`} alt="avatar" />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '800' }}>{acc.name}</h4>
+                    <p style={{ margin: 0, fontSize: '11px', color: 'var(--gray-500)', fontWeight: '500' }}>{new Date(acc.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ margin: 0, fontWeight: '900', fontSize: '18px' }}>₹ {acc.outstandingBalance.toLocaleString()}</p>
+                    <div style={{ fontSize: '10px', color: 'var(--success)', fontWeight: 'bold', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '8px', display: 'inline-block' }}>Active</div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
 

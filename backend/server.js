@@ -7,11 +7,21 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Middleware
-app.use(cors());
-app.use(express.json()); // Allows parsing of JSON request bodies
+const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000'];
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true
+}));
+app.use(express.json());
 app.use('/uploads', express.static('uploads')); // Serve uploaded screenshots
 
 // Database Connection
