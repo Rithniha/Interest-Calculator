@@ -3,7 +3,8 @@
 This document outlines the available API endpoints for the Interest Calculator WebApp.
 
 ## Base URL
-`http://localhost:5000/api`
+- **Production**: `https://interest-calculator-j271.onrender.com/api`
+- **Local**: `http://localhost:5001/api`
 
 ## Authentication
 Most routes require a JWT token to be sent in the header:
