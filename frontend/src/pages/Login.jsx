@@ -9,13 +9,21 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(''); // Clear previous errors
         try {
             const res = await api.post('/auth/login', formData);
             localStorage.setItem('token', res.data.token);
             localStorage.setItem('user', JSON.stringify(res.data.user));
             navigate('/');
         } catch (err) {
-            setError(err.response?.data?.message || 'Login failed');
+            console.error('Login error:', err);
+            if (err.code === 'ERR_NETWORK') {
+                setError('Cannot connect to server. Please check if backend is running.');
+            } else if (err.response) {
+                setError(err.response.data?.message || 'Login failed. Please check your credentials.');
+            } else {
+                setError('Network error. Please check your internet connection.');
+            }
         }
     };
 

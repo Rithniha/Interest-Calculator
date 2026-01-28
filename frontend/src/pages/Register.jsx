@@ -9,11 +9,19 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(''); // Clear previous errors
         try {
             await api.post('/auth/register', formData);
             navigate('/login');
         } catch (err) {
-            setError(err.response?.data?.message || 'Registration failed');
+            console.error('Registration error:', err);
+            if (err.code === 'ERR_NETWORK') {
+                setError('Cannot connect to server. Please check if backend is running.');
+            } else if (err.response) {
+                setError(err.response.data?.message || 'Registration failed. Please try again.');
+            } else {
+                setError('Network error. Please check your internet connection.');
+            }
         }
     };
 

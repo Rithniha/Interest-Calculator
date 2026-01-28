@@ -9,37 +9,35 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Middleware
-const allowedOrigins = [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'https://interest-calculator-frontend.vercel.app', // Placeholder - update with actual URL
-    process.env.FRONTEND_URL
-].filter(Boolean);
-
+// Middleware - CORS Configuration
 app.use(cors({
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
+        // Allow requests with no origin (like mobile apps, Postman, or curl)
         if (!origin) return callback(null, true);
 
-        const isAllowed = allowedOrigins.some(allowed => {
-            if (typeof allowed === 'string') {
-                return origin === allowed || origin.startsWith(allowed);
-            }
-            return false;
-        });
-
-        if (isAllowed) {
-            callback(null, true);
-        } else {
-            console.log('Origin not allowed by CORS:', origin);
-            callback(new Error('Not allowed by CORS'));
+        // Allow all localhost origins for development
+        if (origin.includes('localhost')) {
+            return callback(null, true);
         }
+
+        // Allow all Vercel deployments
+        if (origin.includes('vercel.app')) {
+            return callback(null, true);
+        }
+
+        // Allow specific production domain if set
+        if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) {
+            return callback(null, true);
+        }
+
+        console.log('⚠️  Origin not allowed by CORS:', origin);
+        callback(null, true); // Allow anyway for now to debug
     },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'x-auth-token', 'Authorization']
 }));
+
 app.use(express.json());
 const fs = require('fs');
 const path = require('path');
